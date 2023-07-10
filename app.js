@@ -1,7 +1,13 @@
-const express = require('express');
 require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
 
 const app = express();
+
+app.use(cors({
+  origin: ['http://localhost:*', 'https://keypmine.luxumbra.dev'],
+}))
+
 app.use(express.json()); // for parsing application/json
 
 const crypto = require('crypto');
