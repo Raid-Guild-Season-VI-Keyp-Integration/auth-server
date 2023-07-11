@@ -5,7 +5,7 @@ const cors = require('cors');
 const app = express();
 
 app.use(cors({
-  origin: ['http://localhost:*', 'https://keypmine.luxumbra.dev'],
+  origin: ['http://localhost:3000', 'http://localhost:3420', 'https://keypmine.luxumbra.dev'],
 }))
 
 app.use(express.json()); // for parsing application/json
