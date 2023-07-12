@@ -68,7 +68,8 @@ app.get('/getInfo/:authCode', async (req, res) => {
     });
 
   } catch (error) {
-    console.log('getInfo/authCode error', error.message)
+    console.log('getInfo/authCode error', error)
+    console.error('Server error:', error);
     res.status(400).json({ error: error.message });
   }
 });
