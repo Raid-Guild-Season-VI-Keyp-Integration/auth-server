@@ -26,10 +26,11 @@ function generateAuthCode() {
  * finalise the authentication process.
  */
 app.post('/storeInfo', (req, res) => {
-  console.log('/storeInfo req', store);
   const ACCESS_TOKEN = req.body.token;
+  const WALLET_ADDRESS = req.body.address;
   const data = {
     accessToken: ACCESS_TOKEN,
+    walletAddress: WALLET_ADDRESS,
   }
 
   const authCode = generateAuthCode();
@@ -59,7 +60,8 @@ app.get('/getInfo/:authCode', async (req, res) => {
 
       return;
     }
-    console.log('getInfo/authCode response', { store, token, userDetails });
+
+    // console.log('getInfo/authCode data', { store, token, userDetails });
     res.json({
       accessToken: token,
       walletAddress: userDetails.address,
