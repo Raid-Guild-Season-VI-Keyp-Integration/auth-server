@@ -44,7 +44,6 @@ app.post('/storeInfo', (req, res) => {
  */
 app.get('/getInfo/:authCode', async (req, res) => {
   try {
-    console.log('/getInfo', { params: req.params , body: req.body,  store });
     const authCode = req.params.authCode;
     const token = store[authCode].accessToken;
 
@@ -52,7 +51,7 @@ app.get('/getInfo/:authCode', async (req, res) => {
       headers: { Authorization: `Bearer ${token}` },
     }).then((res) => {
       if (res.status != 200) throw 'KEYP authorization failed, or secret invalid'
-      return res.json({})
+      return res.json()
     })
 
     if (!token) {
@@ -60,6 +59,7 @@ app.get('/getInfo/:authCode', async (req, res) => {
 
       return;
     }
+    console.log('getInfo/authCode response', { store, token, userDetails });
     res.json({
       accessToken: token,
       walletAddress: userDetails.address,
