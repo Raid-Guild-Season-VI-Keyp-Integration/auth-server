@@ -1,9 +1,7 @@
 require('dotenv').config();
-const express = require('express');
 const cors = require('cors');
-
+const express = require('express');
 const app = express();
-
 app.use(cors({
   origin: ['http://localhost:3000', 'http://localhost:3420', 'https://keypmine.luxumbra.dev'],
 }))
@@ -21,27 +19,59 @@ function generateAuthCode() {
   return crypto.randomBytes(3).toString('hex');
 }
 
-// This is the first endpoint.
-app.post('/storeToken', (req, res) => {
-  const token = req.body.token;
-  if (!token) {
-    res.status(400).json({ error: 'No token provided' });
-    return;
+/**
+ * This is the first endpoint.
+ * The frontend will call this endpoint once authenticated with keyp
+ * to obtain the auth code to then pass to the minetest server to
+ * finalise the authentication process.
+ */
+app.post('/storeInfo', (req, res) => {
+  const ACCESS_TOKEN = req.body.token;
+  const WALLET_ADDRESS = req.body.address;
+  const data = {
+    accessToken: ACCESS_TOKEN,
+    walletAddress: WALLET_ADDRESS,
   }
+
   const authCode = generateAuthCode();
-  store[authCode] = token;
+  store[authCode] = data;
+
   res.json({ authCode: authCode });
 });
 
-// This is the second endpoint.
-app.get('/getToken/:authCode', (req, res) => {
-  const authCode = req.params.authCode;
-  const token = store[authCode];
-  if (!token) {
-    res.status(400).json({ error: 'Invalid auth code' });
-    return;
+/**
+ * This is the second endpoint.
+ * The minetest server will call this endpoint with the auth code
+ */
+app.get('/getInfo/:authCode', async (req, res) => {
+  try {
+    const authCode = req.params.authCode;
+    const token = store[authCode].accessToken;
+
+    const userDetails = await fetch('https://api.usekeyp.com/oauth/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then((res) => {
+      if (res.status != 200) throw 'KEYP authorization failed, or secret invalid'
+      return res.json()
+    })
+
+    if (!token) {
+      res.status(400).json({ error: 'Invalid auth code' });
+
+      return;
+    }
+
+    // console.log('getInfo/authCode data', { store, token, userDetails });
+    res.json({
+      accessToken: token,
+      walletAddress: userDetails.address,
+    });
+
+  } catch (error) {
+    console.log('getInfo/authCode error', error)
+    console.error('Server error:', error);
+    res.status(400).json({ error: error.message });
   }
-  res.json({ token: token });
 });
 
 // This starts the server.
